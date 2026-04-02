@@ -1,5 +1,30 @@
 services:
   app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /app
+    volumes:
+      - ./app:/app
+    command: make dev
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
     ports:
       - "8080:8080"
-    command: make dev
+
+  caddy:
+    image: caddy:2
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./services/caddy/Caddyfile:/etc/caddy/Caddyfile
+
+  db:
+    ports:
+      - "5432:5432"
